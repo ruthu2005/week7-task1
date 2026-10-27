@@ -1,0 +1,36 @@
+{
+  "name": "jwt-user-authentication-backend",
+  "version": "1.0.0",
+  "description": "User Authentication backend with JWT, bcrypt password hashing, and Express for Week 7 Task 1",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test tests/auth.test.js",
+    "verify": "node scripts/verify-api.js"
+  },
+  "keywords": [
+    "jwt",
+    "authentication",
+    "bcrypt",
+    "express",
+    "nodejs",
+    "security",
+    "token",
+    "authorization"
+  ],
+  "author": "ruthu2005",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.5"
+  },
+  "devDependencies": {
+    "supertest": "^7.0.0"
+  }
+}

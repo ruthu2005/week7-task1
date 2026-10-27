@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JWT User Authentication & Security Testbench</title>
+  <meta name="description" content="Interactive testing and security verification dashboard for Node.js Express JWT Authentication with bcrypt hashing.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="background-glow top-left"></div>
+  <div class="background-glow bottom-right"></div>
+
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo-area">
+        <div class="shield-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="logo-title">JWT Auth Shield</h1>
+          <p class="logo-subtitle">Week 7 Task 1 &bull; Secure User Authentication</p>
+        </div>
+      </div>
+
+      <div class="header-status">
+        <span class="status-indicator online" id="apiStatusDot"></span>
+        <span class="status-text" id="apiStatusText">Connecting...</span>
+        <span class="db-badge" id="dbBadge">Store: Initializing</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="dashboard-grid">
+      
+      <!-- Left Column: Authentication Controls -->
+      <section class="card auth-card">
+        <div class="tabs">
+          <button class="tab-btn active" id="tabRegister" onclick="switchTab('register')">Register</button>
+          <button class="tab-btn" id="tabLogin" onclick="switchTab('login')">Login</button>
+          <button class="tab-btn" id="tabSecurity" onclick="switchTab('security')">Security Sandbox</button>
+        </div>
+
+        <!-- Register Panel -->
+        <div class="panel active" id="registerPanel">
+          <div class="panel-header">
+            <h2>Create New Account</h2>
+            <p>Passwords are securely salted and hashed using bcrypt (10 rounds) before persistence.</p>
+          </div>
+          <form id="registerForm" onsubmit="handleRegister(event)">
+            <div class="form-group">
+              <label for="regName">Full Name</label>
+              <input type="text" id="regName" placeholder="e.g., Ruthu Engineer" required minlength="2">
+            </div>
+            <div class="form-group">
+              <label for="regEmail">Email Address</label>
+              <input type="email" id="regEmail" placeholder="e.g., ruthu@example.com" required>
+            </div>
+            <div class="form-group">
+              <label for="regPassword">Password</label>
+              <input type="password" id="regPassword" placeholder="Min. 8 characters" required minlength="8">
+              <span class="helper-text">Must be at least 8 characters long</span>
+            </div>
+            <div class="form-group">
+              <label for="regRole">Role</label>
+              <select id="regRole">
+                <option value="user">Standard User (user)</option>
+                <option value="admin">Administrator (admin)</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary" id="btnRegisterSubmit">
+              <span>Register Account</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </button>
+          </form>
+        </div>
+
+        <!-- Login Panel -->
+        <div class="panel" id="loginPanel">
+          <div class="panel-header">
+            <h2>User Authentication</h2>
+            <p>Verify credentials and receive a signed JSON Web Token with HMAC SHA-256 signature.</p>
+          </div>
+          <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+              <label for="loginEmail">Email Address</label>
+              <input type="email" id="loginEmail" placeholder="e.g., ruthu@example.com" required>
+            </div>
+            <div class="form-group">
+              <label for="loginPassword">Password</label>
+              <input type="password" id="loginPassword" placeholder="Your password" required>
+            </div>
+            <button type="submit" class="btn btn-primary" id="btnLoginSubmit">
+              <span>Authenticate & Issue JWT</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            </button>
+          </form>
+        </div>
+
+        <!-- Security Sandbox Panel -->
+        <div class="panel" id="securityPanel">
+          <div class="panel-header">
+            <h2>Security Threat & Error Sandbox</h2>
+            <p>Verify that authMiddleware correctly detects, intercepts, and rejects attack vectors.</p>
+          </div>
+          <div class="sandbox-buttons">
+            <button class="btn btn-outline" onclick="testMissingToken()">
+              <span class="icon">🚫</span>
+              <span>Test Missing Token (401)</span>
+            </button>
+            <button class="btn btn-outline" onclick="testMalformedScheme()">
+              <span class="icon">⚠️</span>
+              <span>Test Non-Bearer Scheme (401)</span>
+            </button>
+            <button class="btn btn-outline" onclick="testTamperedToken()">
+              <span class="icon">⚡</span>
+              <span>Test Tampered Signature (401)</span>
+            </button>
+            <button class="btn btn-outline" onclick="testExpiredToken()">
+              <span class="icon">⏳</span>
+              <span>Test Expired Token (401)</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Active Session & Token Inspector -->
+      <section class="card token-card">
+        <div class="card-header">
+          <div>
+            <h2>Active JWT Session</h2>
+            <p id="sessionSubtitle">No active token session. Please register or log in.</p>
+          </div>
+          <div id="sessionActions" style="display: none;">
+            <button class="btn btn-danger btn-sm" onclick="handleLogout()" id="btnLogout">
+              <span>Log Out (Invalidate Token)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Token Status Bar -->
+        <div class="token-status-bar" id="tokenStatusBar" style="display: none;">
+          <div class="token-status-item">
+            <span class="label">Authenticated As:</span>
+            <span class="val highlight" id="sessionUser">user@example.com</span>
+          </div>
+          <div class="token-status-item">
+            <span class="label">Role:</span>
+            <span class="badge" id="sessionRole">user</span>
+          </div>
+          <div class="token-status-item">
+            <span class="label">Token TTL:</span>
+            <span class="val countdown" id="tokenCountdown">Calculating...</span>
+          </div>
+        </div>
+
+        <!-- Raw Token Display -->
+        <div class="raw-token-box" id="rawTokenBox" style="display: none;">
+          <div class="raw-token-header">
+            <span>Raw JWT Token (Bearer)</span>
+            <button class="copy-btn" onclick="copyToken()" title="Copy Token">Copy</button>
+          </div>
+          <div class="token-string" id="tokenString">...</div>
+        </div>
+
+        <!-- Decoded JWT Parts -->
+        <div class="jwt-breakdown" id="jwtBreakdown" style="display: none;">
+          <div class="jwt-part part-header">
+            <span class="part-tag">HEADER (Algorithm & Token Type)</span>
+            <pre id="jwtHeader">{}</pre>
+          </div>
+          <div class="jwt-part part-payload">
+            <span class="part-tag">PAYLOAD (User Claims & Expiration)</span>
+            <pre id="jwtPayload">{}</pre>
+          </div>
+          <div class="jwt-part part-signature">
+            <span class="part-tag">SIGNATURE (HMAC SHA-256 Secret Verification)</span>
+            <div class="sig-status">Valid cryptographic signature signed by server JWT_SECRET</div>
+          </div>
+        </div>
+
+        <!-- Protected Route Actions -->
+        <div class="protected-actions" id="protectedActions" style="display: none;">
+          <h3>Protected Endpoints Verification</h3>
+          <div class="btn-group">
+            <button class="btn btn-secondary" onclick="fetchProfile()">
+              <span>GET /api/auth/profile</span>
+            </button>
+            <button class="btn btn-secondary" onclick="verifyTokenOnline()">
+              <span>GET /api/auth/verify</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Bottom Section: Live Server Response Log Console -->
+    <section class="card console-card">
+      <div class="card-header">
+        <div class="console-title-area">
+          <span class="terminal-dot red"></span>
+          <span class="terminal-dot yellow"></span>
+          <span class="terminal-dot green"></span>
+          <h2 class="console-title">Live API Response & Wire Inspector</h2>
+        </div>
+        <button class="clear-btn" onclick="clearConsole()">Clear Log</button>
+      </div>
+      <div class="console-body" id="consoleBody">
+        <div class="log-entry info">
+          <span class="log-time">[System Ready]</span>
+          <span class="log-msg">Ready to test authentication endpoints. Choose Register or Login above to begin.</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>Student Placement Tracker &bull; Week 7 Task 1: Implement User Authentication with JWT</p>
+    <p>Built with Node.js, Express, bcrypt, and jsonwebtoken &bull; Ruthu 2026</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
